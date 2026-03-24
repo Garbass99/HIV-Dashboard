@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 
 # Page Configuration
 st.set_page_config(
-    page_title="Gombe State HIV/TB PMTCT Situation Room",
+    page_title="Gombe State HIV/PMTCT Situation Room",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -307,7 +307,7 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>🏥 Gombe State HIV/TB, PMTCT Situation Room Dashboard</h1>
+        <h1>🏥 Gombe State HIV/PMTCT Situation Room Dashboard</h1>
         <p>Comprehensive Program Monitoring & Evaluation | Real-time Performance Tracking</p>
     </div>
     """, unsafe_allow_html=True)
@@ -591,7 +591,7 @@ def main():
                 st.plotly_chart(fig, use_container_width=True, key="stillbirths_trend_chart")
     
     # ============================================
-    # TAB 2: Syphilis & HEI - UPDATED (Removed HEI Chart, Added HBV vs ANC)
+    # TAB 2: Syphilis & HEI
     # ============================================
     with tabs[1]:
         st.header("🩸 Syphilis Testing, Treatment & Hepatitis B")
@@ -607,7 +607,7 @@ def main():
         if syphilis_comparison:
             st.plotly_chart(syphilis_comparison, use_container_width=True, key="syphilis_comparison_chart")
         
-        # 2. HBV Known Status vs New ANC Clients (NEW - Comparison Chart)
+        # 2. HBV Known Status vs New ANC Clients
         st.subheader("📊 Hepatitis B Testing Coverage: Known HBV Status vs New ANC Clients")
         hbv_anc_metrics = {
             "New ANC Clients": 'PMTCT_ANC_1 Number of New ANC clients',
@@ -617,7 +617,7 @@ def main():
         if hbv_anc_comparison:
             st.plotly_chart(hbv_anc_comparison, use_container_width=True, key="hbv_anc_comparison_chart")
         
-        # 3. HBV Testing Trend (Line Chart)
+        # 3. HBV Testing Trend
         if 'PMTCT_HBV. Number of pregnant and breastfeeding women with known HBV Status' in df.columns:
             fig = plot_trend(df, 'PMTCT_HBV. Number of pregnant and breastfeeding women with known HBV Status',
                             "Hepatitis B Status Known Trend")
@@ -625,18 +625,18 @@ def main():
                 st.plotly_chart(fig, use_container_width=True, key="hbv_trend_chart")
     
     # ============================================
-    # TAB 3: EID (Early Infant Diagnosis)
+    # TAB 3: EID (Early Infant Diagnosis) - UPDATED
     # ============================================
     with tabs[2]:
         st.header("👶 Early Infant Diagnosis (EID) Cascade")
         
-        # 1. HEI Prophylaxis vs EID Results (Within 72hrs)
-        st.subheader("📊 HEI Prophylaxis vs EID Results (Within 72hrs)")
+        # 1. EID Samples vs Results (Within 72hrs) - UPDATED: Removed HEI Prophylaxis
+        st.subheader("📊 EID Within 72hrs: Samples Taken vs Results Received")
         eid_72hr_metrics = {
-            "HEI Prophylaxis Within 72hrs": 'PMTCT_HEI_ Number of HIV-exposed infants born to HIV positive women who received ARV prophylaxis within 72 hrs of delivery',
+            "EID Samples Taken (Within 72hrs)": 'PMTCT_EID_30. Number of Infants born to HIV positive women whose blood samples were taken for DNA PCR test within 72 hrs of birth',
             "EID Results Received (≤72hrs)": 'PMTCT_EID_33. Number of HIV PCR results received for babies whose samples were taken within 72 hrs of birth'
         }
-        eid_72hr_comparison = plot_grouped_bar_comparison(df, eid_72hr_metrics, "HEI Prophylaxis vs EID Results (Within 72hrs)")
+        eid_72hr_comparison = plot_grouped_bar_comparison(df, eid_72hr_metrics, "EID Within 72hrs: Samples Taken vs Results Received")
         if eid_72hr_comparison:
             st.plotly_chart(eid_72hr_comparison, use_container_width=True, key="eid_72hr_comparison_chart")
         
