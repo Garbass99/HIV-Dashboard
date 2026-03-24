@@ -13,13 +13,13 @@ warnings.filterwarnings('ignore')
 
 # Page Configuration
 st.set_page_config(
-    page_title="Gombe State HIV/PMTCT Situation Room",
+    page_title="Gombe State HIV/TB PMTCT Situation Room",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Custom CSS with bold fonts and increased font sizes
 st.markdown("""
 <style>
     .main-header {
@@ -32,19 +32,23 @@ st.markdown("""
     }
     .main-header h1 {
         margin: 0;
-        font-size: 2rem;
+        font-size: 2.5rem;
+        font-weight: bold;
     }
     .main-header p {
         margin: 0.5rem 0 0 0;
         opacity: 0.9;
+        font-size: 1.1rem;
+        font-weight: 500;
     }
     .section-header {
         background-color: #f0f2f6;
-        padding: 0.5rem 1rem;
+        padding: 0.8rem 1rem;
         border-radius: 5px;
         margin: 1rem 0;
         border-left: 4px solid #2a5298;
         font-weight: bold;
+        font-size: 1.2rem;
     }
     .kpi-box {
         background: white;
@@ -55,12 +59,13 @@ st.markdown("""
         border-top: 4px solid #2a5298;
     }
     .kpi-value {
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: bold;
         color: #1e3c72;
     }
     .kpi-label {
-        font-size: 0.9rem;
+        font-size: 1rem;
+        font-weight: 600;
         color: #666;
     }
     .reporting-rate-good {
@@ -78,6 +83,24 @@ st.markdown("""
     .positive-value {
         color: #e74c3c;
         font-weight: bold;
+    }
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .stMetric label {
+        font-weight: bold !important;
+        font-size: 1rem !important;
+    }
+    .stMetric .metric-value {
+        font-weight: bold !important;
+        font-size: 1.5rem !important;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: bold !important;
+    }
+    .stMarkdown {
+        font-size: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -168,6 +191,29 @@ def get_reporting_status_color(rate):
     else:
         return "reporting-rate-critical"
 
+def get_reporting_rate_from_column(df, column_name):
+    """Extract reporting rate from column with proper handling of decimal vs percentage values"""
+    if column_name in df.columns and 'Period' in df.columns:
+        # Get data grouped by period
+        reporting_data = df.groupby('Period')[column_name].mean().reset_index()
+        reporting_data.columns = ['Period', 'Reporting_Rate']
+        
+        # Check if values are already percentages (0-100) or decimals (0-1)
+        # If max value is <= 1, it's likely decimal format, convert to percentage
+        if reporting_data['Reporting_Rate'].max() <= 1:
+            reporting_data['Reporting_Rate'] = reporting_data['Reporting_Rate'] * 100
+        
+        reporting_data = reporting_data.sort_values('Period')
+        return reporting_data
+    return None
+
+def find_column(df, possible_names):
+    """Find which column name exists in dataframe"""
+    for name in possible_names:
+        if name in df.columns:
+            return name
+    return None
+
 def plot_grouped_bar_comparison(df, metrics_dict, title, period_col='Period', color_palette=None):
     """Plot grouped bar chart comparing multiple metrics side by side"""
     if period_col not in df.columns:
@@ -198,16 +244,18 @@ def plot_grouped_bar_comparison(df, metrics_dict, title, period_col='Period', co
             name=name,
             marker_color=marker_color,
             text=trend_data[col].apply(lambda x: f'{x:,.0f}'),
-            textposition='outside'
+            textposition='outside',
+            textfont=dict(size=12, weight='bold')
         ))
     
     fig.update_layout(
-        title=title,
-        xaxis_title="Period",
-        yaxis_title="Count",
+        title=dict(text=title, font=dict(size=16, weight='bold')),
+        xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+        yaxis_title=dict(text="Count", font=dict(size=14, weight='bold')),
         barmode='group',
         height=450,
-        hovermode='x unified'
+        hovermode='x unified',
+        legend=dict(font=dict(size=12, weight='bold'))
     )
     
     return fig
@@ -221,7 +269,12 @@ def plot_trend(df, column, title, y_label="Count"):
     trend_data = trend_data.sort_values('Period')
     
     fig = px.line(trend_data, x='Period', y=column, title=title, markers=True)
-    fig.update_layout(xaxis_title="Period", yaxis_title=y_label)
+    fig.update_layout(
+        title=dict(text=title, font=dict(size=16, weight='bold')),
+        xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+        yaxis_title=dict(text=y_label, font=dict(size=14, weight='bold')),
+        legend=dict(font=dict(size=12, weight='bold'))
+    )
     return fig
 
 def plot_pmtct_cascade_bar(df, period_col='Period'):
@@ -246,16 +299,6 @@ def plot_pmtct_cascade_bar(df, period_col='Period'):
         return plot_grouped_bar_comparison(df, valid_metrics, "PMTCT Cascade: ANC → HIV Testing → ART", period_col)
     return None
 
-def get_reporting_rate_from_column(df, column_name):
-    """Extract reporting rate from column"""
-    if column_name in df.columns:
-        # Get unique periods and their reporting rates
-        reporting_data = df.groupby('Period')[column_name].mean().reset_index()
-        reporting_data.columns = ['Period', 'Reporting_Rate']
-        reporting_data['Reporting_Rate'] = reporting_data['Reporting_Rate'] * 100
-        return reporting_data
-    return None
-
 # ============================================
 # MAIN DASHBOARD
 # ============================================
@@ -264,7 +307,7 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>🏥 Gombe State HIV/PMTCT Situation Room Dashboard</h1>
+        <h1>🏥 Gombe State HIV/TB, PMTCT Situation Room Dashboard</h1>
         <p>Comprehensive Program Monitoring & Evaluation | Real-time Performance Tracking</p>
     </div>
     """, unsafe_allow_html=True)
@@ -325,7 +368,7 @@ def main():
                     if selected_month != 'All':
                         filtered_df = filtered_df[filtered_df['Month'] == selected_month]
                 
-                # Quarter Filter (NEW)
+                # Quarter Filter
                 if 'Quarter_Year' in filtered_df.columns:
                     quarters = ['All'] + sorted(filtered_df['Quarter_Year'].dropna().unique().tolist())
                     selected_quarter = st.selectbox("Quarter (3-Month Period)", quarters)
@@ -387,62 +430,124 @@ def main():
             st.markdown(f'<div class="kpi-box"><div class="kpi-value">{df["Period"].min().strftime("%b %Y")} - {df["Period"].max().strftime("%b %Y")}</div><div class="kpi-label">Period</div></div>', unsafe_allow_html=True)
     
     # ============================================
-    # REPORTING RATES SECTION - Using Pre-calculated Columns
+    # REPORTING RATES SECTION
     # ============================================
     st.markdown('<div class="section-header">📋 Form Reporting Rates & Data Completeness</div>', unsafe_allow_html=True)
     
-    reporting_columns = [
-        'ART MONTHLY SUMMARY FORM - Reporting rate',
-        'HTS Forms - Reporting rate',
-        'PMTCT MSF FOR SPOKE SITES   - Reporting rate',
-        'PMTCT MSF Comprehensive - Reporting rate',
-        'PrEP Monthly Summary Form - Reporting rate'
-    ]
+    # Define reporting rate columns with alternative names
+    reporting_columns_config = {
+        'ART MONTHLY SUMMARY FORM - Reporting rate': ['ART MONTHLY SUMMARY FORM - Reporting rate', 'ART Reporting Rate', 'ART_Rate', 'ART Monthly Summary Form - Reporting rate'],
+        'HTS Forms - Reporting rate': ['HTS Forms - Reporting rate', 'HTS Reporting Rate', 'HTS_Rate'],
+        'PMTCT MSF FOR SPOKE SITES   - Reporting rate': ['PMTCT MSF FOR SPOKE SITES   - Reporting rate', 'PMTCT Spoke Reporting Rate', 'Spoke_Rate', 'PMTCT MSF FOR SPOKE SITES - Reporting rate'],
+        'PMTCT MSF Comprehensive - Reporting rate': ['PMTCT MSF Comprehensive - Reporting rate', 'PMTCT Comp Reporting Rate', 'Comp_Rate'],
+        'PrEP Monthly Summary Form - Reporting rate': ['PrEP Monthly Summary Form - Reporting rate', 'PrEP Reporting Rate', 'PrEP_Rate']
+    }
     
     reporting_data_dict = {}
-    for col in reporting_columns:
-        if col in df.columns:
-            reporting_data = get_reporting_rate_from_column(df, col)
-            if reporting_data is not None:
-                reporting_data_dict[col] = reporting_data
+    
+    for display_name, possible_names in reporting_columns_config.items():
+        found_col = find_column(df, possible_names)
+        if found_col:
+            reporting_data = get_reporting_rate_from_column(df, found_col)
+            if reporting_data is not None and len(reporting_data) > 0:
+                clean_name = display_name.replace(' - Reporting rate', '').replace('   ', ' ')
+                reporting_data_dict[clean_name] = reporting_data
     
     if reporting_data_dict:
+        # Display KPI cards for latest reporting rates
         cols = st.columns(min(len(reporting_data_dict), 5))
         for idx, (form_name, data) in enumerate(reporting_data_dict.items()):
             latest_rate = data['Reporting_Rate'].iloc[-1] if len(data) > 0 else 0
             color_class = get_reporting_status_color(latest_rate)
-            display_name = form_name.replace(' - Reporting rate', '').replace('   ', ' ')
             with cols[idx % len(cols)]:
                 st.markdown(f"""
                 <div class="kpi-box">
-                    <div class="kpi-label">{display_name}</div>
+                    <div class="kpi-label">{form_name}</div>
                     <div class="kpi-value {color_class}">{latest_rate:.1f}%</div>
                     <div class="kpi-label">Latest Reporting Rate</div>
                 </div>
                 """, unsafe_allow_html=True)
         
         st.subheader("📈 Form Reporting Rate Trends")
-        # Create combined chart for reporting rates
-        fig = make_subplots(rows=len(reporting_data_dict), cols=1, subplot_titles=list(reporting_data_dict.keys()), vertical_spacing=0.1)
-        row = 1
+        
+        # Create separate line charts for each reporting rate
         for form_name, data in reporting_data_dict.items():
-            fig.add_trace(go.Scatter(x=data['Period'], y=data['Reporting_Rate'], mode='lines+markers', name=form_name), row=row, col=1)
-            fig.add_hline(y=90, line_dash="dash", line_color="green", row=row, col=1)
-            fig.update_yaxes(title_text="Rate (%)", range=[0, 100], row=row, col=1)
-            row += 1
-        fig.update_layout(height=400 * len(reporting_data_dict), title="Form Reporting Rates Over Time")
-        st.plotly_chart(fig, use_container_width=True, key="reporting_rates_chart")
+            if len(data) > 0:
+                fig = go.Figure()
+                
+                fig.add_trace(go.Scatter(
+                    x=data['Period'],
+                    y=data['Reporting_Rate'],
+                    mode='lines+markers',
+                    name=form_name,
+                    line=dict(color='#1e3c72', width=3),
+                    marker=dict(size=8, color='#2a5298'),
+                    text=data['Reporting_Rate'].round(1),
+                    textposition='top center',
+                    hovertemplate='Period: %{x}<br>Rate: %{y:.1f}%<extra></extra>'
+                ))
+                
+                fig.add_hline(
+                    y=90, 
+                    line_dash="dash", 
+                    line_color="green",
+                    annotation_text="Target (90%)",
+                    annotation_position="bottom right"
+                )
+                
+                fig.add_hrect(y0=0, y1=70, line_width=0, fillcolor="red", opacity=0.1)
+                fig.add_hrect(y0=70, y1=90, line_width=0, fillcolor="orange", opacity=0.1)
+                fig.add_hrect(y0=90, y1=100, line_width=0, fillcolor="green", opacity=0.1)
+                
+                fig.update_layout(
+                    title=dict(text=f"{form_name} - Reporting Rate Trend", font=dict(size=16, weight='bold')),
+                    xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                    yaxis_title=dict(text="Reporting Rate (%)", font=dict(size=14, weight='bold')),
+                    yaxis_range=[0, 100],
+                    height=450,
+                    hovermode='x unified',
+                    showlegend=False
+                )
+                
+                st.plotly_chart(fig, use_container_width=True, key=f"reporting_rate_{form_name.replace(' ', '_')}")
+        
+        # Create a combined view
+        with st.expander("📊 View All Reporting Rates Combined"):
+            combined_fig = go.Figure()
+            colors = ['#1e3c72', '#2a5298', '#3b6cb0', '#4c86c8', '#5da0e0']
+            
+            for idx, (form_name, data) in enumerate(reporting_data_dict.items()):
+                if len(data) > 0:
+                    combined_fig.add_trace(go.Scatter(
+                        x=data['Period'],
+                        y=data['Reporting_Rate'],
+                        mode='lines+markers',
+                        name=form_name,
+                        line=dict(color=colors[idx % len(colors)], width=2),
+                        marker=dict(size=6)
+                    ))
+            
+            combined_fig.add_hline(y=90, line_dash="dash", line_color="green", annotation_text="Target (90%)")
+            combined_fig.update_layout(
+                title=dict(text="All Form Reporting Rates Comparison", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Reporting Rate (%)", font=dict(size=14, weight='bold')),
+                yaxis_range=[0, 100],
+                height=500,
+                hovermode='x unified'
+            )
+            st.plotly_chart(combined_fig, use_container_width=True, key="combined_reporting_rates")
     
     # Tabs for different program areas
-    tabs = st.tabs(["🤰 PMTCT", "🩸 Syphilis & HEI", "👶 EID", "🔬 HTS & PrEP", "💊 ART & VL", "🫁 TB/HIV", "🧠 AHD"])
+    tabs = st.tabs(["🤰 PMTCT", "🩸 Syphilis & HBV", "👶 EID", "🔬 HTS & PrEP", "💊 ART & VL", "🫁 TB/HIV", "🧠 AHD"])
     
     # ============================================
-    # TAB 1: PMTCT - All VS Comparisons as Grouped Bar Charts
+    # TAB 1: PMTCT
     # ============================================
     with tabs[0]:
         st.header("🤰 PMTCT Program Performance")
         
-        # 1. PMTCT Cascade - ANC, HIV Tested, HIV Positive, New on ART
+        # 1. PMTCT Cascade
         st.subheader("📊 PMTCT Cascade")
         pmtct_cascade = plot_pmtct_cascade_bar(df)
         if pmtct_cascade:
@@ -486,10 +591,10 @@ def main():
                 st.plotly_chart(fig, use_container_width=True, key="stillbirths_trend_chart")
     
     # ============================================
-    # TAB 2: Syphilis & HEI
+    # TAB 2: Syphilis & HEI - UPDATED (Removed HEI Chart, Added HBV vs ANC)
     # ============================================
     with tabs[1]:
-        st.header("🩸 Syphilis Testing, Treatment & HEI Prophylaxis")
+        st.header("🩸 Syphilis Testing, Treatment & Hepatitis B")
         
         # 1. Syphilis Cascade
         st.subheader("📊 Syphilis Testing and Treatment Cascade")
@@ -502,25 +607,25 @@ def main():
         if syphilis_comparison:
             st.plotly_chart(syphilis_comparison, use_container_width=True, key="syphilis_comparison_chart")
         
-        # 2. HEI Prophylaxis (Already in Tab 1, but showing here too)
-        st.subheader("📊 HEI Prophylaxis: Within 72hrs vs After 72hrs")
-        hei_metrics = {
-            "Prophylaxis Within 72hrs": 'PMTCT_HEI_ Number of HIV-exposed infants born to HIV positive women who received ARV prophylaxis within 72 hrs of delivery',
-            "Prophylaxis After 72hrs": 'PMTCT_HEI Number of HIV-exposed infants born to HIV positive women who received ARV prophylaxis after 72 hrs of delivery'
+        # 2. HBV Known Status vs New ANC Clients (NEW - Comparison Chart)
+        st.subheader("📊 Hepatitis B Testing Coverage: Known HBV Status vs New ANC Clients")
+        hbv_anc_metrics = {
+            "New ANC Clients": 'PMTCT_ANC_1 Number of New ANC clients',
+            "Known HBV Status": 'PMTCT_HBV. Number of pregnant and breastfeeding women with known HBV Status'
         }
-        hei_comparison = plot_grouped_bar_comparison(df, hei_metrics, "HEI Prophylaxis Timing Comparison")
-        if hei_comparison:
-            st.plotly_chart(hei_comparison, use_container_width=True, key="hei_comparison_chart_tab2")
+        hbv_anc_comparison = plot_grouped_bar_comparison(df, hbv_anc_metrics, "HBV Testing Coverage: Known Status vs ANC Clients")
+        if hbv_anc_comparison:
+            st.plotly_chart(hbv_anc_comparison, use_container_width=True, key="hbv_anc_comparison_chart")
         
-        # 3. HBV Testing
+        # 3. HBV Testing Trend (Line Chart)
         if 'PMTCT_HBV. Number of pregnant and breastfeeding women with known HBV Status' in df.columns:
             fig = plot_trend(df, 'PMTCT_HBV. Number of pregnant and breastfeeding women with known HBV Status',
-                            "Hepatitis B Status Known")
+                            "Hepatitis B Status Known Trend")
             if fig:
                 st.plotly_chart(fig, use_container_width=True, key="hbv_trend_chart")
     
     # ============================================
-    # TAB 3: EID (Early Infant Diagnosis) - UPDATED
+    # TAB 3: EID (Early Infant Diagnosis)
     # ============================================
     with tabs[2]:
         st.header("👶 Early Infant Diagnosis (EID) Cascade")
@@ -589,7 +694,11 @@ def main():
             
             fig = px.line(positivity_data, x='Period', y='Positivity_Rate', 
                          title="HTS Positivity Rate Trend", markers=True)
-            fig.update_layout(yaxis_title="Positivity Rate (%)")
+            fig.update_layout(
+                title=dict(text="HTS Positivity Rate Trend", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Positivity Rate (%)", font=dict(size=14, weight='bold'))
+            )
             st.plotly_chart(fig, use_container_width=True, key="hts_positivity_rate_chart")
         
         # 3. PrEP Screened vs Initiated
@@ -612,7 +721,11 @@ def main():
             
             fig = px.line(prep_rate_data, x='Period', y='Initiation_Rate', 
                          title="PrEP Initiation Rate Trend", markers=True)
-            fig.update_layout(yaxis_title="Initiation Rate (%)")
+            fig.update_layout(
+                title=dict(text="PrEP Initiation Rate Trend", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Initiation Rate (%)", font=dict(size=14, weight='bold'))
+            )
             st.plotly_chart(fig, use_container_width=True, key="prep_initiation_rate_chart")
         
         # 5. TB Screening in HTS
@@ -663,7 +776,11 @@ def main():
             
             fig = px.line(vl_coverage_data, x='Period', y='VL_Coverage', 
                          title="Viral Load Testing Coverage Trend", markers=True)
-            fig.update_layout(yaxis_title="Coverage (%)")
+            fig.update_layout(
+                title=dict(text="Viral Load Testing Coverage Trend", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Coverage (%)", font=dict(size=14, weight='bold'))
+            )
             st.plotly_chart(fig, use_container_width=True, key="vl_coverage_chart")
         
         # 4. VL Suppression Rate
@@ -676,7 +793,11 @@ def main():
             
             fig = px.line(vl_suppression_data, x='Period', y='Suppression_Rate', 
                          title="Viral Load Suppression Rate Trend", markers=True)
-            fig.update_layout(yaxis_title="Suppression Rate (%)")
+            fig.update_layout(
+                title=dict(text="Viral Load Suppression Rate Trend", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Suppression Rate (%)", font=dict(size=14, weight='bold'))
+            )
             st.plotly_chart(fig, use_container_width=True, key="vl_suppression_chart")
         
         # 5. New ART Initiations vs TB Screened
@@ -718,7 +839,11 @@ def main():
             
             fig = px.line(tb_tx_data, x='Period', y='Treatment_Rate', 
                          title="TB Treatment Initiation Rate Among Confirmed TB Cases", markers=True)
-            fig.update_layout(yaxis_title="Treatment Rate (%)")
+            fig.update_layout(
+                title=dict(text="TB Treatment Initiation Rate", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Treatment Rate (%)", font=dict(size=14, weight='bold'))
+            )
             st.plotly_chart(fig, use_container_width=True, key="tb_treatment_rate_chart")
     
     # ============================================
@@ -756,7 +881,11 @@ def main():
             
             fig = px.line(crag_coverage_data, x='Period', y='CrAg_Coverage', 
                          title="CrAg Screening Coverage Among AHD Patients", markers=True)
-            fig.update_layout(yaxis_title="Coverage (%)")
+            fig.update_layout(
+                title=dict(text="CrAg Screening Coverage", font=dict(size=16, weight='bold')),
+                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
+                yaxis_title=dict(text="Coverage (%)", font=dict(size=14, weight='bold'))
+            )
             st.plotly_chart(fig, use_container_width=True, key="crag_coverage_chart")
         
         # 4. Cryptococcal Meningitis Screening
