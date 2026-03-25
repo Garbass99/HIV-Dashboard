@@ -1,4 +1,4 @@
-# HIV_PMTCT_Dashboard.py - Complete Professional Dashboard with All Adjustments
+# HIV_PMTCT_Dashboard.py - Complete Professional Dashboard with Enhanced Font Sizes
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -19,9 +19,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS with bold fonts and increased font sizes
+# Custom CSS with BOLD and ENLARGED fonts for better visibility
 st.markdown("""
 <style>
+    /* Main header styling */
     .main-header {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         padding: 1.5rem;
@@ -32,14 +33,14 @@ st.markdown("""
     }
     .main-header h1 {
         margin: 0;
-        font-size: 2.5rem;
-        font-weight: bold;
+        font-size: 3rem !important;
+        font-weight: bold !important;
     }
     .main-header p {
         margin: 0.5rem 0 0 0;
         opacity: 0.9;
-        font-size: 1.1rem;
-        font-weight: 500;
+        font-size: 1.3rem !important;
+        font-weight: 500 !important;
     }
     .section-header {
         background-color: #f0f2f6;
@@ -48,59 +49,135 @@ st.markdown("""
         margin: 1rem 0;
         border-left: 4px solid #2a5298;
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.5rem !important;
     }
+    
+    /* KPI Box Styling with LARGER NUMBERS */
     .kpi-box {
         background: white;
         border-radius: 10px;
-        padding: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1.5rem 1rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         text-align: center;
         border-top: 4px solid #2a5298;
+        transition: transform 0.2s;
+    }
+    .kpi-box:hover {
+        transform: scale(1.02);
     }
     .kpi-value {
-        font-size: 2.2rem;
-        font-weight: bold;
+        font-size: 3.2rem !important;
+        font-weight: bold !important;
         color: #1e3c72;
+        line-height: 1.2;
+        margin: 0.5rem 0;
     }
     .kpi-label {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
         color: #666;
+        margin-top: 0.5rem;
     }
+    
+    /* Reporting rate colors */
     .reporting-rate-good {
-        color: #27ae60;
-        font-weight: bold;
+        color: #27ae60 !important;
+        font-weight: bold !important;
+        font-size: 3.2rem !important;
     }
     .reporting-rate-warning {
-        color: #f39c12;
-        font-weight: bold;
+        color: #f39c12 !important;
+        font-weight: bold !important;
+        font-size: 3.2rem !important;
     }
     .reporting-rate-critical {
-        color: #e74c3c;
-        font-weight: bold;
+        color: #e74c3c !important;
+        font-weight: bold !important;
+        font-size: 3.2rem !important;
     }
     .positive-value {
         color: #e74c3c;
         font-weight: bold;
     }
+    
+    /* Tab styling */
     .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Metric styling for streamlit metrics */
+    .stMetric {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .stMetric label {
         font-weight: bold !important;
-        font-size: 1rem !important;
+        font-size: 1.1rem !important;
+        color: #666;
     }
     .stMetric .metric-value {
         font-weight: bold !important;
-        font-size: 1.5rem !important;
+        font-size: 2.5rem !important;
+        color: #1e3c72;
     }
+    
+    /* Headers */
     h1, h2, h3, h4, h5, h6 {
         font-weight: bold !important;
     }
-    .stMarkdown {
+    h1 {
+        font-size: 2.5rem !important;
+    }
+    h2 {
+        font-size: 2rem !important;
+    }
+    h3 {
+        font-size: 1.75rem !important;
+    }
+    h4 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* General text */
+    .stMarkdown, p, li, div {
         font-size: 1rem;
+    }
+    
+    /* Dataframe tables */
+    .dataframe {
+        font-size: 1rem !important;
+    }
+    .dataframe th {
+        font-weight: bold !important;
+        font-size: 1rem !important;
+    }
+    .dataframe td {
+        font-size: 1rem !important;
+    }
+    
+    /* Expander headers */
+    .streamlit-expanderHeader {
+        font-size: 1.2rem !important;
+        font-weight: bold !important;
+    }
+    
+    /* Sidebar text */
+    .css-1d391kg, .css-163ttbj, .css-1v0mbdj {
+        font-size: 1rem !important;
+    }
+    
+    /* Success and info messages */
+    .stAlert {
+        font-size: 1rem !important;
+    }
+    
+    /* Button text */
+    .stButton button {
+        font-size: 1rem !important;
+        font-weight: 500 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -110,9 +187,22 @@ st.markdown("""
 # ============================================
 
 def load_data(uploaded_file):
-    """Load and process uploaded Excel file"""
+    """Load and process uploaded Excel file - Supports both .xlsx and .xls formats"""
     try:
-        df = pd.read_excel(uploaded_file)
+        # Check file extension to use appropriate engine
+        file_name = uploaded_file.name.lower()
+        
+        if file_name.endswith('.xlsx'):
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
+        elif file_name.endswith('.xls'):
+            df = pd.read_excel(uploaded_file, engine='xlrd')
+        else:
+            # Try openpyxl first, then fallback to xlrd
+            try:
+                df = pd.read_excel(uploaded_file, engine='openpyxl')
+            except:
+                df = pd.read_excel(uploaded_file, engine='xlrd')
+        
         df.columns = df.columns.str.strip()
         
         # Convert Period to datetime
@@ -245,36 +335,81 @@ def plot_grouped_bar_comparison(df, metrics_dict, title, period_col='Period', co
             marker_color=marker_color,
             text=trend_data[col].apply(lambda x: f'{x:,.0f}'),
             textposition='outside',
-            textfont=dict(size=12, weight='bold')
+            textfont=dict(size=16, weight='bold', family='Arial Black'),  # Increased to 16px and bold
+            textangle=0,
+            insidetextanchor='middle'
         ))
     
+    # Format x-axis dates to be bold
+    period_labels = trend_data[period_col].dt.strftime('%b %Y') if pd.api.types.is_datetime64_any_dtype(trend_data[period_col]) else trend_data[period_col].astype(str)
+    
     fig.update_layout(
-        title=dict(text=title, font=dict(size=16, weight='bold')),
-        xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-        yaxis_title=dict(text="Count", font=dict(size=14, weight='bold')),
+        title=dict(text=title, font=dict(size=20, weight='bold', family='Arial Black')),
+        xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+        yaxis_title=dict(text="Count", font=dict(size=16, weight='bold', family='Arial Black')),
         barmode='group',
-        height=450,
+        height=500,
         hovermode='x unified',
-        legend=dict(font=dict(size=12, weight='bold'))
+        legend=dict(font=dict(size=14, weight='bold', family='Arial Black')),
+        xaxis=dict(
+            tickfont=dict(size=14, weight='bold', family='Arial Black'),
+            ticktext=period_labels,
+            tickvals=trend_data[period_col]
+        ),
+        yaxis=dict(
+            tickfont=dict(size=13, weight='bold', family='Arial Black'),
+            tickformat=',d'  # Format numbers with commas
+        ),
+        plot_bgcolor='white',
+        bargap=0.2
     )
     
     return fig
 
 def plot_trend(df, column, title, y_label="Count"):
-    """Plot trend line chart"""
+    """Plot trend line chart with bold numbers and periods"""
     if column not in df.columns or 'Period' not in df.columns:
         return None
     
     trend_data = df.groupby('Period')[column].sum().reset_index()
     trend_data = trend_data.sort_values('Period')
     
-    fig = px.line(trend_data, x='Period', y=column, title=title, markers=True)
+    # Format x-axis dates
+    period_labels = trend_data['Period'].dt.strftime('%b %Y')
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatter(
+        x=trend_data['Period'],
+        y=trend_data[column],
+        mode='lines+markers',
+        marker=dict(size=12, color='#2a5298'),
+        line=dict(color='#1e3c72', width=3),
+        text=trend_data[column].apply(lambda x: f'{x:,.0f}'),
+        textposition='top center',
+        textfont=dict(size=14, weight='bold', family='Arial Black'),
+        hovertemplate='Period: %{x}<br>Value: %{y:,.0f}<extra></extra>'
+    ))
+    
     fig.update_layout(
-        title=dict(text=title, font=dict(size=16, weight='bold')),
-        xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-        yaxis_title=dict(text=y_label, font=dict(size=14, weight='bold')),
-        legend=dict(font=dict(size=12, weight='bold'))
+        title=dict(text=title, font=dict(size=20, weight='bold', family='Arial Black')),
+        xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+        yaxis_title=dict(text=y_label, font=dict(size=16, weight='bold', family='Arial Black')),
+        legend=dict(font=dict(size=14, weight='bold', family='Arial Black')),
+        xaxis=dict(
+            tickfont=dict(size=14, weight='bold', family='Arial Black'),
+            ticktext=period_labels,
+            tickvals=trend_data['Period']
+        ),
+        yaxis=dict(
+            tickfont=dict(size=13, weight='bold', family='Arial Black'),
+            tickformat=',d'  # Format numbers with commas
+        ),
+        hovermode='x unified',
+        height=450,
+        plot_bgcolor='white'
     )
+    
     return fig
 
 def plot_pmtct_cascade_bar(df, period_col='Period'):
@@ -413,7 +548,7 @@ def main():
     # Get filtered data
     df = st.session_state.get('filtered_df', st.session_state.df)
     
-    # Display Filter Summary
+    # Display Filter Summary with LARGER numbers
     st.markdown('<div class="section-header">📊 Dashboard Overview</div>', unsafe_allow_html=True)
     
     col1, col2, col3, col4 = st.columns(4)
@@ -454,7 +589,7 @@ def main():
                 reporting_data_dict[clean_name] = reporting_data
     
     if reporting_data_dict:
-        # Display KPI cards for latest reporting rates
+        # Display KPI cards for latest reporting rates with LARGER numbers
         cols = st.columns(min(len(reporting_data_dict), 5))
         for idx, (form_name, data) in enumerate(reporting_data_dict.items()):
             latest_rate = data['Reporting_Rate'].iloc[-1] if len(data) > 0 else 0
@@ -475,15 +610,19 @@ def main():
             if len(data) > 0:
                 fig = go.Figure()
                 
+                # Format period labels
+                period_labels = data['Period'].dt.strftime('%b %Y')
+                
                 fig.add_trace(go.Scatter(
                     x=data['Period'],
                     y=data['Reporting_Rate'],
                     mode='lines+markers',
                     name=form_name,
                     line=dict(color='#1e3c72', width=3),
-                    marker=dict(size=8, color='#2a5298'),
+                    marker=dict(size=10, color='#2a5298'),
                     text=data['Reporting_Rate'].round(1),
                     textposition='top center',
+                    textfont=dict(size=14, weight='bold', family='Arial Black'),
                     hovertemplate='Period: %{x}<br>Rate: %{y:.1f}%<extra></extra>'
                 ))
                 
@@ -492,6 +631,7 @@ def main():
                     line_dash="dash", 
                     line_color="green",
                     annotation_text="Target (90%)",
+                    annotation_font=dict(size=14, weight='bold'),
                     annotation_position="bottom right"
                 )
                 
@@ -500,13 +640,19 @@ def main():
                 fig.add_hrect(y0=90, y1=100, line_width=0, fillcolor="green", opacity=0.1)
                 
                 fig.update_layout(
-                    title=dict(text=f"{form_name} - Reporting Rate Trend", font=dict(size=16, weight='bold')),
-                    xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                    yaxis_title=dict(text="Reporting Rate (%)", font=dict(size=14, weight='bold')),
+                    title=dict(text=f"{form_name} - Reporting Rate Trend", font=dict(size=20, weight='bold', family='Arial Black')),
+                    xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                    yaxis_title=dict(text="Reporting Rate (%)", font=dict(size=16, weight='bold', family='Arial Black')),
                     yaxis_range=[0, 100],
-                    height=450,
+                    height=500,
                     hovermode='x unified',
-                    showlegend=False
+                    showlegend=False,
+                    xaxis=dict(
+                        tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                        ticktext=period_labels,
+                        tickvals=data['Period']
+                    ),
+                    yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
                 )
                 
                 st.plotly_chart(fig, use_container_width=True, key=f"reporting_rate_{form_name.replace(' ', '_')}")
@@ -524,17 +670,20 @@ def main():
                         mode='lines+markers',
                         name=form_name,
                         line=dict(color=colors[idx % len(colors)], width=2),
-                        marker=dict(size=6)
+                        marker=dict(size=8)
                     ))
             
             combined_fig.add_hline(y=90, line_dash="dash", line_color="green", annotation_text="Target (90%)")
             combined_fig.update_layout(
-                title=dict(text="All Form Reporting Rates Comparison", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Reporting Rate (%)", font=dict(size=14, weight='bold')),
+                title=dict(text="All Form Reporting Rates Comparison", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Reporting Rate (%)", font=dict(size=16, weight='bold', family='Arial Black')),
                 yaxis_range=[0, 100],
-                height=500,
-                hovermode='x unified'
+                height=550,
+                hovermode='x unified',
+                legend=dict(font=dict(size=12, weight='bold')),
+                xaxis=dict(tickfont=dict(size=12, weight='bold')),
+                yaxis=dict(tickfont=dict(size=12, weight='bold'))
             )
             st.plotly_chart(combined_fig, use_container_width=True, key="combined_reporting_rates")
     
@@ -547,7 +696,7 @@ def main():
     with tabs[0]:
         st.header("🤰 PMTCT Program Performance")
         
-        # 1. PMTCT Cascade
+        # 1. PMTCT Cascade (includes ANC Clients)
         st.subheader("📊 PMTCT Cascade")
         pmtct_cascade = plot_pmtct_cascade_bar(df)
         if pmtct_cascade:
@@ -596,7 +745,7 @@ def main():
     with tabs[1]:
         st.header("🩸 Syphilis Testing, Treatment & Hepatitis B")
         
-        # 1. Syphilis Cascade
+        # 1. Syphilis Cascade (includes Tested for Syphilis)
         st.subheader("📊 Syphilis Testing and Treatment Cascade")
         syphilis_metrics = {
             "Tested for Syphilis": 'PMTCT_Syphilis- Number of new ANC Clients tested for syphilis total',
@@ -630,7 +779,7 @@ def main():
     with tabs[2]:
         st.header("👶 Early Infant Diagnosis (EID) Cascade")
         
-        # 1. EID Samples vs Results (Within 72hrs) - UPDATED: Removed HEI Prophylaxis
+        # 1. EID Samples vs Results (Within 72hrs)
         st.subheader("📊 EID Within 72hrs: Samples Taken vs Results Received")
         eid_72hr_metrics = {
             "EID Samples Taken (Within 72hrs)": 'PMTCT_EID_30. Number of Infants born to HIV positive women whose blood samples were taken for DNA PCR test within 72 hrs of birth',
@@ -692,12 +841,29 @@ def main():
             ).reset_index()
             positivity_data.columns = ['Period', 'Positivity_Rate']
             
-            fig = px.line(positivity_data, x='Period', y='Positivity_Rate', 
-                         title="HTS Positivity Rate Trend", markers=True)
+            period_labels = positivity_data['Period'].dt.strftime('%b %Y')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=positivity_data['Period'],
+                y=positivity_data['Positivity_Rate'],
+                mode='lines+markers',
+                marker=dict(size=10, color='#2a5298'),
+                line=dict(color='#1e3c72', width=3),
+                text=positivity_data['Positivity_Rate'].round(1),
+                textposition='top center',
+                textfont=dict(size=14, weight='bold', family='Arial Black')
+            ))
             fig.update_layout(
-                title=dict(text="HTS Positivity Rate Trend", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Positivity Rate (%)", font=dict(size=14, weight='bold'))
+                title=dict(text="HTS Positivity Rate Trend", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Positivity Rate (%)", font=dict(size=16, weight='bold', family='Arial Black')),
+                xaxis=dict(
+                    tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                    ticktext=period_labels,
+                    tickvals=positivity_data['Period']
+                ),
+                yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
             )
             st.plotly_chart(fig, use_container_width=True, key="hts_positivity_rate_chart")
         
@@ -719,12 +885,29 @@ def main():
             ).reset_index()
             prep_rate_data.columns = ['Period', 'Initiation_Rate']
             
-            fig = px.line(prep_rate_data, x='Period', y='Initiation_Rate', 
-                         title="PrEP Initiation Rate Trend", markers=True)
+            period_labels = prep_rate_data['Period'].dt.strftime('%b %Y')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=prep_rate_data['Period'],
+                y=prep_rate_data['Initiation_Rate'],
+                mode='lines+markers',
+                marker=dict(size=10, color='#2a5298'),
+                line=dict(color='#1e3c72', width=3),
+                text=prep_rate_data['Initiation_Rate'].round(1),
+                textposition='top center',
+                textfont=dict(size=14, weight='bold', family='Arial Black')
+            ))
             fig.update_layout(
-                title=dict(text="PrEP Initiation Rate Trend", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Initiation Rate (%)", font=dict(size=14, weight='bold'))
+                title=dict(text="PrEP Initiation Rate Trend", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Initiation Rate (%)", font=dict(size=16, weight='bold', family='Arial Black')),
+                xaxis=dict(
+                    tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                    ticktext=period_labels,
+                    tickvals=prep_rate_data['Period']
+                ),
+                yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
             )
             st.plotly_chart(fig, use_container_width=True, key="prep_initiation_rate_chart")
         
@@ -774,12 +957,29 @@ def main():
             ).reset_index()
             vl_coverage_data.columns = ['Period', 'VL_Coverage']
             
-            fig = px.line(vl_coverage_data, x='Period', y='VL_Coverage', 
-                         title="Viral Load Testing Coverage Trend", markers=True)
+            period_labels = vl_coverage_data['Period'].dt.strftime('%b %Y')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=vl_coverage_data['Period'],
+                y=vl_coverage_data['VL_Coverage'],
+                mode='lines+markers',
+                marker=dict(size=10, color='#2a5298'),
+                line=dict(color='#1e3c72', width=3),
+                text=vl_coverage_data['VL_Coverage'].round(1),
+                textposition='top center',
+                textfont=dict(size=14, weight='bold', family='Arial Black')
+            ))
             fig.update_layout(
-                title=dict(text="Viral Load Testing Coverage Trend", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Coverage (%)", font=dict(size=14, weight='bold'))
+                title=dict(text="Viral Load Testing Coverage Trend", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Coverage (%)", font=dict(size=16, weight='bold', family='Arial Black')),
+                xaxis=dict(
+                    tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                    ticktext=period_labels,
+                    tickvals=vl_coverage_data['Period']
+                ),
+                yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
             )
             st.plotly_chart(fig, use_container_width=True, key="vl_coverage_chart")
         
@@ -791,16 +991,33 @@ def main():
             ).reset_index()
             vl_suppression_data.columns = ['Period', 'Suppression_Rate']
             
-            fig = px.line(vl_suppression_data, x='Period', y='Suppression_Rate', 
-                         title="Viral Load Suppression Rate Trend", markers=True)
+            period_labels = vl_suppression_data['Period'].dt.strftime('%b %Y')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=vl_suppression_data['Period'],
+                y=vl_suppression_data['Suppression_Rate'],
+                mode='lines+markers',
+                marker=dict(size=10, color='#2a5298'),
+                line=dict(color='#1e3c72', width=3),
+                text=vl_suppression_data['Suppression_Rate'].round(1),
+                textposition='top center',
+                textfont=dict(size=14, weight='bold', family='Arial Black')
+            ))
             fig.update_layout(
-                title=dict(text="Viral Load Suppression Rate Trend", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Suppression Rate (%)", font=dict(size=14, weight='bold'))
+                title=dict(text="Viral Load Suppression Rate Trend", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Suppression Rate (%)", font=dict(size=16, weight='bold', family='Arial Black')),
+                xaxis=dict(
+                    tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                    ticktext=period_labels,
+                    tickvals=vl_suppression_data['Period']
+                ),
+                yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
             )
             st.plotly_chart(fig, use_container_width=True, key="vl_suppression_chart")
         
-        # 5. New ART Initiations vs TB Screened
+        # 5. New ART Initiations vs TB Screened (includes TB Screened)
         st.subheader("📊 New ART Initiations vs TB Screened")
         art_tb_metrics = {
             "New ART Initiations": 'ART Monthly_1_Newly Initiated',
@@ -816,7 +1033,7 @@ def main():
     with tabs[5]:
         st.header("🫁 TB/HIV Integration Cascade")
         
-        # Full TB Cascade
+        # Full TB Cascade (includes Screened for TB)
         st.subheader("📊 TB/HIV Cascade: Screening to Treatment")
         tb_metrics = {
             "Screened for TB": 'ART Monthly_10_PLHIV on ART (Including PMTCT) who were Clinically Screened for TB in HIV Treatment Settings',
@@ -837,12 +1054,29 @@ def main():
             ).reset_index()
             tb_tx_data.columns = ['Period', 'Treatment_Rate']
             
-            fig = px.line(tb_tx_data, x='Period', y='Treatment_Rate', 
-                         title="TB Treatment Initiation Rate Among Confirmed TB Cases", markers=True)
+            period_labels = tb_tx_data['Period'].dt.strftime('%b %Y')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=tb_tx_data['Period'],
+                y=tb_tx_data['Treatment_Rate'],
+                mode='lines+markers',
+                marker=dict(size=10, color='#2a5298'),
+                line=dict(color='#1e3c72', width=3),
+                text=tb_tx_data['Treatment_Rate'].round(1),
+                textposition='top center',
+                textfont=dict(size=14, weight='bold', family='Arial Black')
+            ))
             fig.update_layout(
-                title=dict(text="TB Treatment Initiation Rate", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Treatment Rate (%)", font=dict(size=14, weight='bold'))
+                title=dict(text="TB Treatment Initiation Rate", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Treatment Rate (%)", font=dict(size=16, weight='bold', family='Arial Black')),
+                xaxis=dict(
+                    tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                    ticktext=period_labels,
+                    tickvals=tb_tx_data['Period']
+                ),
+                yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
             )
             st.plotly_chart(fig, use_container_width=True, key="tb_treatment_rate_chart")
     
@@ -879,12 +1113,29 @@ def main():
             ).reset_index()
             crag_coverage_data.columns = ['Period', 'CrAg_Coverage']
             
-            fig = px.line(crag_coverage_data, x='Period', y='CrAg_Coverage', 
-                         title="CrAg Screening Coverage Among AHD Patients", markers=True)
+            period_labels = crag_coverage_data['Period'].dt.strftime('%b %Y')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=crag_coverage_data['Period'],
+                y=crag_coverage_data['CrAg_Coverage'],
+                mode='lines+markers',
+                marker=dict(size=10, color='#2a5298'),
+                line=dict(color='#1e3c72', width=3),
+                text=crag_coverage_data['CrAg_Coverage'].round(1),
+                textposition='top center',
+                textfont=dict(size=14, weight='bold', family='Arial Black')
+            ))
             fig.update_layout(
-                title=dict(text="CrAg Screening Coverage", font=dict(size=16, weight='bold')),
-                xaxis_title=dict(text="Period", font=dict(size=14, weight='bold')),
-                yaxis_title=dict(text="Coverage (%)", font=dict(size=14, weight='bold'))
+                title=dict(text="CrAg Screening Coverage", font=dict(size=20, weight='bold', family='Arial Black')),
+                xaxis_title=dict(text="Period", font=dict(size=16, weight='bold', family='Arial Black')),
+                yaxis_title=dict(text="Coverage (%)", font=dict(size=16, weight='bold', family='Arial Black')),
+                xaxis=dict(
+                    tickfont=dict(size=14, weight='bold', family='Arial Black'),
+                    ticktext=period_labels,
+                    tickvals=crag_coverage_data['Period']
+                ),
+                yaxis=dict(tickfont=dict(size=13, weight='bold', family='Arial Black'))
             )
             st.plotly_chart(fig, use_container_width=True, key="crag_coverage_chart")
         
